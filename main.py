@@ -117,6 +117,7 @@ class Main:
 
         expression = self.calculate_mul_div(expression)
         expression = self.calculate_add_sub(expression)
+        expression = self.compare(expression)
 
         return expression[0]
 
@@ -158,6 +159,22 @@ class Main:
             i += 2
 
         return [result]
+
+    def compare(self, tokens):
+        for i, token in enumerate(tokens):
+            if token == "<":
+                arg = tokens[i - 1] < tokens[i + 1]
+                return "wahr" if arg == True else "falsch"
+            elif token == ">":
+                arg = tokens[i - 1] > tokens[i + 1]
+                return "wahr" if arg == True else "falsch"
+            elif token == "=":
+                if tokens[i + 1] == "=":
+                    arg = tokens[i - 1] == tokens[i + 2]
+                    return "wahr" if arg == True else "falsch"
+                
+        return tokens
+
 
     def is_command(self, tokens):
         return len(tokens) > 0 and tokens[0] in self.commands
