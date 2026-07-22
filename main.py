@@ -115,9 +115,13 @@ class Main:
                 + expression[ende + 1:]
             )
 
+        vergleichs_operatoren = {"==", "!=", "<", ">", "<=", ">="}
+
+        if any(token in vergleichs_operatoren for token in expression):
+            return self.compare(expression)
+
         expression = self.calculate_mul_div(expression)
         expression = self.calculate_add_sub(expression)
-        expression = self.compare(expression)
 
         return expression[0]
 
@@ -161,27 +165,38 @@ class Main:
         return [result]
 
     def compare(self, tokens):
+        operatoren = {"==", "!=", "<", ">", "<=", ">="}
+
         for i, token in enumerate(tokens):
+            if token in operatoren:
 
-            if token == "<":
-                return "wahr" if tokens[i-1] < tokens[i+1] else "falsch"
+                links = self.calculate(tokens[:i])
+                rechts = self.calculate(tokens[i + 1:])
 
-            elif token == ">":
-                return "wahr" if tokens[i-1] > tokens[i+1] else "falsch"
+                if token == "==":
+                    return "wahr" if links == rechts else "falsch"
 
-            elif token == "==":
-                return "wahr" if tokens[i-1] == tokens[i+1] else "falsch"
+                elif token == "!=":
+                    return "wahr" if links != rechts else "falsch"
 
-            elif token == "<=":
-                return "wahr" if tokens[i-1] <= tokens[i+1] else "falsch"
+                elif token == "<":
+                    return "wahr" if links < rechts else "falsch"
 
-            elif token == ">=":
-                return "wahr" if tokens[i-1] >= tokens[i+1] else "falsch"
+                elif token == ">":
+                    return "wahr" if links > rechts else "falsch"
 
-            elif token == "!=":
-                return "wahr" if tokens[i-1] != tokens[i+1] else "falsch"
+                elif token == "<=":
+                    return "wahr" if links <= rechts else "falsch"
+
+                elif token == ">=":
+                    return "wahr" if links >= rechts else "falsch"
 
         return tokens
+
+    def calculate(self, tokens):
+        tokens = self.calculate_mul_div(tokens)
+        tokens = self.calculate_add_sub(tokens)
+        return tokens[0]
 
 
     def is_command(self, tokens):
