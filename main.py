@@ -162,17 +162,25 @@ class Main:
 
     def compare(self, tokens):
         for i, token in enumerate(tokens):
+
             if token == "<":
-                arg = tokens[i - 1] < tokens[i + 1]
-                return "wahr" if arg == True else "falsch"
+                return "wahr" if tokens[i-1] < tokens[i+1] else "falsch"
+
             elif token == ">":
-                arg = tokens[i - 1] > tokens[i + 1]
-                return "wahr" if arg == True else "falsch"
-            elif token == "=":
-                if tokens[i + 1] == "=":
-                    arg = tokens[i - 1] == tokens[i + 2]
-                    return "wahr" if arg == True else "falsch"
-                
+                return "wahr" if tokens[i-1] > tokens[i+1] else "falsch"
+
+            elif token == "==":
+                return "wahr" if tokens[i-1] == tokens[i+1] else "falsch"
+
+            elif token == "<=":
+                return "wahr" if tokens[i-1] <= tokens[i+1] else "falsch"
+
+            elif token == ">=":
+                return "wahr" if tokens[i-1] >= tokens[i+1] else "falsch"
+
+            elif token == "!=":
+                return "wahr" if tokens[i-1] != tokens[i+1] else "falsch"
+
         return tokens
 
 
