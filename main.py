@@ -19,7 +19,7 @@ class Main:
         self.terminal_box = None
         self.commands = {
             "schreibe": self.schreibe,
-            # "eingabe": selpf.eingabe,
+            # "eingabe": self.eingabe,
         }
 
     def process_code(self):
@@ -40,7 +40,7 @@ class Main:
                 self.error("Unvollständiger Befehl")
                 return
 
-            statements = self.split_code(tokens)
+            statements, _ = self.split_code(tokens)
 
             for statement in statements:
                 if len(statement) == 0:
@@ -58,6 +58,9 @@ class Main:
 
         elif self.is_command(tokens):
             self.execute_command(tokens)
+
+        elif self.is_if(tokens):
+            self.execute_if(tokens)
 
         else:
             self.error(f"Unbekannter Befehl: {' '.join(map(str, tokens))}")
@@ -174,22 +177,22 @@ class Main:
                 rechts = self.calculate(tokens[i + 1:])
 
                 if token == "==":
-                    return "wahr" if links == rechts else "falsch"
+                    return links == rechts
 
                 elif token == "!=":
-                    return "wahr" if links != rechts else "falsch"
+                    return links != rechts
 
                 elif token == "<":
-                    return "wahr" if links < rechts else "falsch"
+                    return links < rechts
 
                 elif token == ">":
-                    return "wahr" if links > rechts else "falsch"
+                    return links > rechts
 
                 elif token == "<=":
-                    return "wahr" if links <= rechts else "falsch"
+                    return links <= rechts
 
                 elif token == ">=":
-                    return "wahr" if links >= rechts else "falsch"
+                    return links >= rechts
 
         return tokens
 
@@ -198,6 +201,18 @@ class Main:
         tokens = self.calculate_add_sub(tokens)
         return tokens[0]
 
+    def is_if(self, tokens):
+        return len(tokens) > 0 and tokens[0] == "wenn"
+
+    def execute_if(self, tokens):
+        condition = tokens[1:-1]
+        block = tokens[-1]
+
+        result = self.eval_expressions(condition)
+
+        if result:
+            for statement in block:
+                self.execute(statement)
 
     def is_command(self, tokens):
         return len(tokens) > 0 and tokens[0] in self.commands
@@ -276,20 +291,45 @@ class Main:
 
             self.terminal_box.configure(state="disabled")
 
-    def split_code(self, code):
-        lines = []
-        start = 0
+    def split_code(self, tokens, pos=0):
+        statements = []
+        statement = []
 
-        for i, token in enumerate(code):
-            if token == ";":
-                if start < i:
-                    lines.append(code[start:i])
-                start = i + 1
+        while pos < len(tokens):
+            token = tokens[pos]
 
-        if start < len(code):
-            lines.append(code[start:])
+            # Ende des aktuellen Blocks
+            if token == "}":
+                if statement:
+                    statements.append(statement)
+                return statements, pos
 
-        return lines
+            # Neuer Block beginnt
+            elif token == "{":
+                block, pos = self.split_code(tokens, pos + 1)
+                statement.append(block)
+
+                # Das aktuelle Statement (z.B. wenn) ist jetzt komplett
+                statements.append(statement)
+                statement = []
+
+            # Statement beendet
+            elif token == ";":
+                if statement:
+                    statements.append(statement)
+                    statement = []
+
+            # Normales Token
+            else:
+                statement.append(token)
+
+            pos += 1
+
+        # Falls am Dateiende noch ein Statement übrig ist
+        if statement:
+            statements.append(statement)
+
+        return statements, pos
 
     def schreibe(self, arg=""):
         self.terminal_box.configure(state="normal")
